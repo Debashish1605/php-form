@@ -26,11 +26,11 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 withAWS(region: AWS_REGION, credentials: 'aws-credentials-id') {
-                    sh """
+                    sh '''
                     $(aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO})
                     docker tag ${DOCKER_IMAGE_NAME}:latest ${ECR_REPO}:${BUILD_NUMBER}
                     docker push ${ECR_REPO}:${BUILD_NUMBER}
-                    """
+                    '''
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sshagent(['ec2-ssh-credentials-id']) {
-                    sh """
+                    sh '''
                     ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} << 'EOF'
                     # Stop and remove the existing container if it exists
                     docker stop php-app || true
@@ -51,7 +51,7 @@ pipeline {
                     docker run -d --name php-app -p 80:80 ${ECR_REPO}:${BUILD_NUMBER}
 
                     # Check if the container is running
-                    if [ "\$(docker ps -q -f name=php-app)" ]; then
+                    if [ "$(docker ps -q -f name=php-app)" ]; then
                         echo "Application is running."
                     else
                         echo "Application failed to start." >&2
@@ -59,7 +59,7 @@ pipeline {
                     fi
 
                     EOF
-                    """
+                    '''
                 }
             }
         }
