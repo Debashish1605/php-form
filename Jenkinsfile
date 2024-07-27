@@ -27,9 +27,9 @@ pipeline {
             steps {
                 withAWS(region: AWS_REGION, credentials: 'aws-credentials-id') {
                     sh """
-                    $(aws ecr-public get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO)
-                    docker tag $DOCKER_IMAGE_NAME:latest $ECR_REPO:$BUILD_NUMBER
-                    docker push $ECR_REPO:$BUILD_NUMBER
+                    $(aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO})
+                    docker tag ${DOCKER_IMAGE_NAME}:latest ${ECR_REPO}:${BUILD_NUMBER}
+                    docker push ${ECR_REPO}:${BUILD_NUMBER}
                     """
                 }
             }
@@ -39,19 +39,19 @@ pipeline {
             steps {
                 sshagent(['ec2-ssh-credentials-id']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@$EC2_IP << 'EOF'
+                    ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} << 'EOF'
                     # Stop and remove the existing container if it exists
                     docker stop php-app || true
                     docker rm php-app || true
 
                     # Pull the latest image from ECR
-                    docker pull $ECR_REPO:$BUILD_NUMBER
+                    docker pull ${ECR_REPO}:${BUILD_NUMBER}
 
                     # Run the new container
-                    docker run -d --name php-app -p 80:80 $ECR_REPO:$BUILD_NUMBER
+                    docker run -d --name php-app -p 80:80 ${ECR_REPO}:${BUILD_NUMBER}
 
                     # Check if the container is running
-                    if [ "$(docker ps -q -f name=php-app)" ]; then
+                    if [ "\$(docker ps -q -f name=php-app)" ]; then
                         echo "Application is running."
                     else
                         echo "Application failed to start." >&2
