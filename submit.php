@@ -1,8 +1,8 @@
 <?php
-$servername = "database-2.chuey2eq2prq.ap-south-1.rds.amazonaws.com";
+$servername = "database-1.chuey2eq2prq.ap-south-1.rds.amazonaws.com";
 $username = "admin"; // or your chosen master username
 $password = "Devashish2262";
-$dbname = "database-2";
+$dbname = "database-1";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
